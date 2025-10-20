@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Facturación</title>
+  <style>
+    /* ====== Estilos generales ====== */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f2f5;
+      display: flex;
+    }
+
+    /* ====== Barra lateral (COPIADA EXACTA DE materiales.html) ====== */
+    .sidebar {
+      height: 100vh;
+      width: 220px;
+      background-color: #5d7d75;
+      position: fixed;
+      top: 0;
+      left: 0;
+      padding-top: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h2 {
+      color: white;
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 20px;
+    }
+
+    .sidebar a {
+      padding: 12px 20px;
+      text-decoration: none;
+      color: white;
+      display: block;
+      font-size: 15px;
+      font-weight: 500;
+      transition: background 0.3s;
+    }
+
+    .sidebar a:hover {
+      background-color: #46625b;
+    }
+
+    .sidebar a.active {
+      background-color: #3d554f;
+      font-weight: bold;
+    }
+
+    /* ====== Contenido principal ====== */
+    .content {
+      margin-left: 220px; /* Igual al ancho de la barra lateral */
+      padding: 30px;
+      flex: 1;
+    }
+
+    h1 {
+      font-size: 26px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    label, input, button.buscar-btn {
+      display: block;
+      width: 100%;
+      margin-top: 15px;
+      font-size: 16px;
+    }
+
+    input {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button.buscar-btn {
+      background-color: #5c8374;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 20px;
+      font-size: 15px;
+    }
+
+    button.buscar-btn:hover {
+      background-color: #44665c;
+    }
+
+    #tituloFactura {
+      margin-top: 30px;
+      font-weight: bold;
+      font-size: 18px;
+      text-align: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #e0e7ff;
+      color: #1e3a8a;
+    }
+
+    #tablaFactura {
+      display: none;
+    }
+
+    #totalGeneral {
+      font-size: 20px;
+      font-weight: bold;
+      text-align: right;
+      margin-top: 10px;
+      display: none;
+    }
+
+    @media print {
+      .sidebar, .buscar-btn, input, label {
+        display: none;
+      }
+
+      #tablaFactura {
+        display: table !important;
+      }
+
+      #totalGeneral {
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ====== Barra lateral (copiada literal de materiales.html) ====== -->
+  <div class="sidebar">
+    <h2>Gestor de Obra</h2>
+    <a href="materiales.html">📋 Materiales</a>
+    <a href="materiales_generales.html">➕ Agregar material</a>
+    <a href="cotizacion.html">💰 Hacer cotización</a>
+    <a href="registro.html">📝 Registro</a>
+    <a href="estadisticas.html">📊 Estadísticas</a>
+    <a href="facturacion.html" class="active">🧾 Facturación</a>
+    <a href="proyectos.html">🏗️ Proyectos</a>
+    <a href="clientes.html">👥 Clientes y Proveedores</a>
+  </div>
+
+  <!-- ====== Contenido principal ====== -->
+  <div class="content">
+    <h1>Facturación</h1>
+
+    <div class="container">
+      <label for="idCotizacion">Ingrese el ID de la cotización:</label>
+      <input type="number" id="idCotizacion" min="1" />
+      <button class="buscar-btn" onclick="buscarFactura()">Buscar</button>
+
+      <div id="tituloFactura"></div>
+
+      <table id="tablaFactura">
+        <thead>
+          <tr>
+            <th>ID Material</th>
+            <th>Nombre</th>
+            <th>Unidad</th>
+            <th>Precio Unitario</th>
+            <th>Precio Total</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div id="totalGeneral">Total: $0.00</div>
+
+      <button class="buscar-btn" onclick="window.print()">Imprimir factura (PDF)</button>
+    </div>
+  </div>
+
+  <script>
+    function buscarFactura() {
+      const id = document.getElementById('idCotizacion').value;
+      if (!id) return alert("Por favor ingrese un ID de cotización.");
+
+      fetch(`http://localhost:3000/facturacion/${id}`)
+        .then(response => response.json())
+        .then(data => {
+          const tabla = document.querySelector('#tablaFactura');
+          const cuerpo = tabla.querySelector('tbody');
+          const titulo = document.getElementById('tituloFactura');
+          const totalDiv = document.getElementById('totalGeneral');
+          cuerpo.innerHTML = '';
+          titulo.innerHTML = '';
+          totalDiv.style.display = "none";
+
+          if (data.length === 0) {
+            alert('No se encontró una cotización con ese ID.');
+            tabla.style.display = 'none';
+            return;
+          }
+
+          const fecha = new Date(data[0].fecha || Date.now()).toLocaleString();
+          titulo.textContent = `Factura Cotización #${id} - ${fecha}`;
+
+          let totalFinal = 0;
+
+          data.forEach(item => {
+            const total = item.precio_unitario * item.cantidad;
+            totalFinal += total;
+
+            const fila = document.createElement('tr');
+            fila.innerHTML = `
+              <td>${item.IDmaterial || 'N/A'}</td>
+              <td>${item.nombre_material}</td>
+              <td>${item.Unidad || 'N/A'}</td>
+              <td>$${Number(item.precio_unitario).toFixed(2)}</td>
+              <td>$${Number(total).toFixed(2)}</td>
+            `;
+            cuerpo.appendChild(fila);
+          });
+
+          tabla.style.display = 'table';
+          totalDiv.style.display = 'block';
+          totalDiv.textContent = 'Total: $' + totalFinal.toFixed(2);
+        })
+        .catch(error => {
+          alert('Error al obtener la factura');
+          console.error(error);
+        });
+    }
+  </script>
+
+</body>
+</html>

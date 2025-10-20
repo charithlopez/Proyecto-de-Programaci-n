@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Estadísticas de Materiales</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* ====== Estilos generales ====== */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f2f5;
+      display: flex;
+    }
+
+    /* ====== Barra lateral (igual a materiales) ====== */
+    .sidebar {
+      height: 100vh;
+      width: 220px;
+      background-color: #5d7d75;
+      position: fixed;
+      top: 0;
+      left: 0;
+      padding-top: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h2 {
+      color: white;
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 20px;
+    }
+
+    .sidebar a {
+      padding: 12px 20px;
+      text-decoration: none;
+      color: white;
+      display: block;
+      font-size: 15px;
+      font-weight: 500;
+      transition: background 0.3s;
+    }
+
+    .sidebar a:hover {
+      background-color: #46625b;
+    }
+
+    .sidebar a.active {
+      background-color: #3d554f;
+      font-weight: bold;
+    }
+
+    /* ====== Contenido principal ====== */
+    .content {
+      margin-left: 220px; /* Igual al ancho de la barra lateral */
+      padding: 30px;
+      flex: 1;
+    }
+
+    h1 {
+      font-size: 26px;
+      margin-bottom: 20px;
+      color: #333;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 400px !important;
+    }
+
+    .volver {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .volver button {
+      background-color: #5c8374;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .volver button:hover {
+      background-color: #44665c;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ====== Barra lateral ====== -->
+  <div class="sidebar">
+    <h2>Gestor de Obra</h2>
+    <a href="materiales.html">📋 Materiales</a>
+    <a href="materiales_generales.html">➕ Agregar material</a>
+    <a href="cotizacion.html">💰 Hacer cotización</a>
+    <a href="registro.html">📝 Registro</a>
+    <a href="estadisticas.html" class="active">📊 Estadísticas</a>
+    <a href="facturacion.html">🧾 Facturación</a>
+    <a href="proyectos.html">🏗️ Proyectos</a>
+    <a href="clientes.html">👥 Clientes y Proveedores</a>
+  </div>
+
+  <!-- ====== Contenido principal ====== -->
+  <div class="content">
+    <h1>Estadísticas de Materiales</h1>
+
+    <div class="container">
+      <canvas id="graficaMateriales"></canvas>
+
+      <div class="volver">
+        <button onclick="window.location.href='materiales.html'">Volver</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ctx = document.getElementById('graficaMateriales').getContext('2d');
+
+    fetch('http://localhost:3000/estadisticas-materiales')
+      .then(res => res.json())
+      .then(data => {
+        if (!data || data.length === 0) {
+          alert('No hay datos disponibles para mostrar.');
+          return;
+        }
+
+        // Extraer nombres de materiales y cantidades
+        const etiquetas = data.map(item => item.nombre_material);
+        const cantidades = data.map(item => item.total_cantidad);
+
+        // Crear gráfica de barras
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: etiquetas,
+            datasets: [{
+              label: 'Cantidad total utilizada',
+              data: cantidades,
+              backgroundColor: '#5c8374',
+              borderRadius: 5
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top'
+              },
+              title: {
+                display: false
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  precision: 0
+                }
+              },
+              x: {
+                ticks: {
+                  autoSkip: false,
+                  maxRotation: 45,
+                  minRotation: 0
+                }
+              }
+            }
+          }
+        });
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Error al cargar las estadísticas.');
+      });
+  </script>
+
+</body>
+</html>

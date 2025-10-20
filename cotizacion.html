@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Hacer Cotización</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f2f4f8;
+            margin: 0;
+        }
+
+        header {
+            background-color: #5c8374;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 20px;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .btn {
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            background-color: #5c8374;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #44665c;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #e0e7ff;
+            color: #1e3a8a;
+        }
+
+        #totalFinal {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .volver {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .volver button {
+            background-color: #ccc;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .volver button:hover {
+            background-color: #bbb;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Hacer Cotización</h1>
+    </header>
+
+    <div class="container">
+        <label for="material">Selecciona un material:</label>
+        <select id="material"></select>
+
+        <label for="cantidad">Cantidad:</label>
+        <input type="number" id="cantidad" min="1" value="1">
+
+        <button class="btn" onclick="agregarMaterial()">Agregar</button>
+
+        <table id="tablaCotizacion">
+            <thead>
+                <tr>
+                    <th>Material</th>
+                    <th>Precio Unitario</th>
+                    <th>Cantidad</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <div id="totalFinal">Total: $0.00</div>
+
+        <button class="btn" onclick="finalizarCotizacion()">Finalizar Cotización</button>
+
+        <div class="volver">
+            <button onclick="window.location.href='index.html'">Volver al Menú Principal</button>
+        </div>
+    </div>
+
+    <script>
+        let materiales = [];
+        let totalFinal = 0;
+
+        fetch('http://localhost:3000/cotizador')
+            .then(response => response.json())
+            .then(data => {
+                materiales = data;
+                const select = document.getElementById('material');
+                materiales.forEach(mat => {
+                    const option = document.createElement('option');
+                    option.value = mat.IDmaterial;
+                    option.textContent = `${mat.Nombre} (${mat.Unidad}) - $${mat.Precio}`;
+                    select.appendChild(option);
+                });
+            });
+
+function agregarMaterial() {
+    const select = document.getElementById('material');
+    const cantidad = parseInt(document.getElementById('cantidad').value);
+    const materialID = select.value;
+    const material = materiales.find(m => m.IDmaterial == materialID);
+
+    if (!material || cantidad <= 0) return;
+
+    const precio = parseFloat(material.Precio);
+    const subtotal = precio * cantidad;
+    totalFinal += subtotal;
+
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+        <td>${material.Nombre}</td>
+        <td>${precio.toFixed(2)}</td>
+        <td>${cantidad}</td>
+        <td>${subtotal.toFixed(2)}</td>
+    `;
+
+    document.querySelector('#tablaCotizacion tbody').appendChild(fila);
+    document.getElementById('totalFinal').textContent = 'Total: $' + totalFinal.toFixed(2);
+}
+
+
+        function finalizarCotizacion() {
+            const filas = document.querySelectorAll('#tablaCotizacion tbody tr');
+            if (filas.length === 0) {
+                alert("Agrega al menos un material antes de finalizar.");
+                return;
+            }
+
+            const cotizacion = [];
+
+            filas.forEach(fila => {
+                const nombre = fila.children[0].textContent;
+                const precioUnitario = parseFloat(fila.children[1].textContent.replace('$', ''));
+                const cantidad = parseInt(fila.children[2].textContent);
+                cotizacion.push({ nombre, precioUnitario, cantidad });
+            });
+
+            fetch('http://localhost:3000/finalizar-cotizacion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ materiales: cotizacion, total: totalFinal })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || "Cotización guardada con éxito");
+                location.reload();
+            })
+            .catch(error => {
+                alert("Hubo un error al guardar la cotización");
+                console.error(error);
+            });
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Cotizaciones</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f2f4f8;
+            margin: 0;
+        }
+
+        header {
+            background-color: #5c8374;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #e0e7ff;
+            color: #1e3a8a;
+        }
+
+        .titulo-cotizacion {
+            background-color: #d3e4ff;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .total-cotizacion {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .volver {
+            text-align: center;
+        }
+
+        .volver button {
+            padding: 10px 20px;
+            background-color: #5c8374;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .volver button:hover {
+            background-color: #44665c;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Registro de Cotizaciones</h1>
+    </header>
+
+    <div class="container">
+        <table id="tablaCompleta">
+            <tbody></tbody>
+        </table>
+
+        <div class="volver">
+            <button onclick="window.location.href='index.html'">Volver al Menú Principal</button>
+        </div>
+    </div>
+
+    <script>
+        fetch('http://localhost:3000/registro-completo')
+            .then(response => response.json())
+            .then(data => {
+                const tabla = document.querySelector('#tablaCompleta tbody');
+                tabla.innerHTML = '';
+
+                const agrupado = {};
+                data.forEach(item => {
+                    const id = item.id_cotizacion;
+                    if (!agrupado[id]) {
+                        agrupado[id] = {
+                            fecha: item.fecha,
+                            materiales: []
+                        };
+                    }
+                    agrupado[id].materiales.push(item);
+                });
+
+                for (const [id, datos] of Object.entries(agrupado)) {
+                    const titulo = document.createElement('tr');
+                    titulo.innerHTML = `
+                        <td colspan="6" class="titulo-cotizacion">
+                            Cotización #${id} - ${new Date(datos.fecha).toLocaleString()}
+                        </td>`;
+                    tabla.appendChild(titulo);
+
+                    const encabezado = document.createElement('tr');
+                    encabezado.innerHTML = `
+                        <th>Material</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Valor Total</th>
+                        <th colspan="2"></th>`;
+                    tabla.appendChild(encabezado);
+
+                    let total = 0;
+                    datos.materiales.forEach(item => {
+                        const valor = item.cantidad * item.precio_unitario;
+                        total += valor;
+
+                        const fila = document.createElement('tr');
+                        fila.innerHTML = `
+                            <td>${item.nombre_material}</td>
+                            <td>${item.cantidad}</td>
+                            <td>$${Number(item.precio_unitario).toFixed(2)}</td>
+                            <td>$${Number(valor).toFixed(2)}</td>
+                            <td colspan="2"></td>`;
+                        tabla.appendChild(fila);
+                    });
+
+                    const filaTotal = document.createElement('tr');
+                    filaTotal.innerHTML = `
+                        <td colspan="3" class="total-cotizacion">Total Cotización:</td>
+                        <td class="total-cotizacion">$${total.toFixed(2)}</td>
+                        <td colspan="2"></td>`;
+                    tabla.appendChild(filaTotal);
+                }
+            })
+            .catch(err => {
+                document.querySelector('#tablaCompleta tbody').innerHTML = '<tr><td colspan="6">Error al cargar cotizaciones.</td></tr>';
+                console.error(err);
+            });
+    </script>
+</body>
+</html>

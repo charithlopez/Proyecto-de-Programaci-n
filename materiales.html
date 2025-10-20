@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Materiales Registrados</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      min-height: 100vh;
+      background-color: #f4f6f9;
+    }
+    .sidebar {
+      width: 230px;
+      background-color: #5a7f71;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+    }
+    .sidebar h2 { text-align:center; font-size:22px; margin-bottom:18px;}
+    .sidebar a {
+      color: white; text-decoration: none; padding: 12px 20px; display:block;
+      transition: background-color 0.2s; font-size: 16px;
+    }
+    .sidebar a:hover, .sidebar a.active { background-color: #4a6a5f; border-left:4px solid #fff; }
+
+    .content {
+      margin-left: 230px;
+      padding: 30px;
+      width: calc(100% - 230px);
+    }
+    .content h1 { font-size:28px; font-weight:700; color:#333; margin-bottom:14px; }
+
+    .card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      padding: 20px;
+    }
+
+    table thead { background-color: #e7edff; }
+    table th, table td { text-align:center; vertical-align:middle; }
+    .btn-custom { background-color: #5a7f71; color: white; border: none; padding:6px 10px; border-radius:6px; }
+    .btn-edit { background-color:#2563eb; color:white; border:none; padding:5px 10px; border-radius:6px; }
+    .btn-del { background-color:#e11d48; color:white; border:none; padding:5px 10px; border-radius:6px; }
+    .small-muted { color:#6b7280; font-size:0.95rem; margin-bottom:10px; }
+
+    .search-bar {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .search-bar input {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Gestor de Obra</h2>
+    <a href="materiales.html" class="active">📋 Materiales</a>
+    <a href="materiales_generales.html">➕ Agregar material</a>
+    <a href="cotizacion.html">💰 Hacer cotización</a>
+    <a href="registro.html">📝 Registro</a>
+    <a href="estadisticas.html">📊 Estadísticas</a>
+    <a href="facturacion.html">🧾 Facturación</a>
+    <a href="proyectos.html">🏗️ Proyectos</a>
+    <a href="clientes.html">👥 Clientes y Proveedores</a>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+    <h1>Materiales Registrados</h1>
+
+    <div class="card">
+      <div class="small-muted">Lista de materiales disponibles en la base de datos. Puedes buscar por ID o unidad, y editar cada fila.</div>
+
+      <!-- 🔍 Barra de búsqueda -->
+      <div class="search-bar">
+        <input type="text" id="searchInput" class="form-control" placeholder="Buscar por ID o Unidad...">
+        <button id="clearSearch" class="btn btn-secondary">Limpiar</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th style="width:6%;">ID</th>
+              <th>Nombre</th>
+              <th style="width:14%;">Unidad</th>
+              <th style="width:14%;">Precio</th>
+              <th style="width:20%;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaMateriales">
+            <tr><td colspan="5">Cargando materiales...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const BASE = 'http://localhost:3000';
+    let materialesData = []; // guardamos todos los materiales aquí
+
+    function getField(m, ...keys) {
+      for (const k of keys) if (m[k] !== undefined && m[k] !== null) return m[k];
+      return '';
+    }
+
+    function formatPrice(v) {
+      const n = parseFloat(v);
+      if (isNaN(n)) return v;
+      return '$' + n.toFixed(2);
+    }
+
+    async function cargarMateriales() {
+      const tbody = document.getElementById('tablaMateriales');
+      try {
+        const res = await fetch(`${BASE}/cotizador`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+
+        materialesData = data;
+        renderMateriales(data);
+
+      } catch (err) {
+        console.error('Error al cargar materiales:', err);
+        tbody.innerHTML = `<tr><td colspan="5">Error al cargar los materiales.</td></tr>`;
+      }
+    }
+
+    function renderMateriales(data) {
+      const tbody = document.getElementById('tablaMateriales');
+      if (!Array.isArray(data) || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5">No hay materiales registrados.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = '';
+      data.forEach(m => {
+        const id = getField(m, 'IDmaterial', 'id', 'ID', 'Id');
+        const nombre = getField(m, 'Nombre', 'nombre', 'name');
+        const unidad = getField(m, 'Unidad', 'unidad', 'unit');
+        const precioRaw = getField(m, 'Precio', 'precio', 'price');
+
+        const tr = document.createElement('tr');
+        tr.dataset.id = id;
+        tr.innerHTML = `
+          <td>${id}</td>
+          <td class="td-nombre">${escapeHtml(nombre)}</td>
+          <td class="td-unidad">${escapeHtml(unidad)}</td>
+          <td class="td-precio">${escapeHtml(formatPrice(precioRaw))}</td>
+          <td>
+            <button class="btn-edit" data-action="editar">Editar</button>
+            <button class="btn-custom" data-action="guardar" style="display:none">Guardar</button>
+            <button class="btn-custom" data-action="cancelar" style="display:none">Cancelar</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+
+        tr.querySelector('button[data-action="editar"]').addEventListener('click', () => iniciarEdicion(tr));
+        tr.querySelector('button[data-action="guardar"]').addEventListener('click', () => guardarEdicion(tr));
+        tr.querySelector('button[data-action="cancelar"]').addEventListener('click', () => cancelarEdicion(tr, { nombre, unidad, precioRaw }));
+      });
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function iniciarEdicion(tr) {
+      const tdNombre = tr.querySelector('.td-nombre');
+      const tdUnidad = tr.querySelector('.td-unidad');
+      const tdPrecio = tr.querySelector('.td-precio');
+
+      const nombreVal = tdNombre.textContent.trim();
+      const unidadVal = tdUnidad.textContent.trim();
+      const precioVal = tdPrecio.textContent.replace(/\$/g,'').replace(/,/g,'').trim();
+
+      tdNombre.innerHTML = `<input type="text" class="form-control input-nombre" value="${escapeHtml(nombreVal)}" />`;
+      tdUnidad.innerHTML = `<input type="text" class="form-control input-unidad" value="${escapeHtml(unidadVal)}" />`;
+      tdPrecio.innerHTML = `<input type="number" step="0.01" class="form-control input-precio" value="${precioVal}" />`;
+
+      tr.querySelector('button[data-action="editar"]').style.display = 'none';
+      tr.querySelector('button[data-action="guardar"]').style.display = 'inline-block';
+      tr.querySelector('button[data-action="cancelar"]').style.display = 'inline-block';
+    }
+
+    function cancelarEdicion(tr, original) {
+      tr.querySelector('.td-nombre').textContent = original.nombre;
+      tr.querySelector('.td-unidad').textContent = original.unidad;
+      tr.querySelector('.td-precio').textContent = formatPrice(original.precioRaw);
+
+      tr.querySelector('button[data-action="editar"]').style.display = 'inline-block';
+      tr.querySelector('button[data-action="guardar"]').style.display = 'none';
+      tr.querySelector('button[data-action="cancelar"]').style.display = 'none';
+    }
+
+    async function guardarEdicion(tr) {
+      const id = tr.dataset.id;
+      const inputNombre = tr.querySelector('.input-nombre').value.trim();
+      const inputUnidad = tr.querySelector('.input-unidad').value.trim();
+      const inputPrecioRaw = tr.querySelector('.input-precio').value;
+      const inputPrecio = parseFloat(inputPrecioRaw);
+
+      if (!inputNombre) return alert('El nombre no puede quedar vacío.');
+      if (!inputUnidad) return alert('La unidad no puede quedar vacía.');
+      if (isNaN(inputPrecio)) return alert('Precio inválido.');
+
+      const putPaths = ['/actualizar-material/', '/editar-material/', '/materiales/', '/cotizador/'];
+      let lastError = null;
+      for (const p of putPaths) {
+        try {
+          const res = await fetch(`${BASE}${p}${encodeURIComponent(id)}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre: inputNombre, unidad: inputUnidad, precio: inputPrecio })
+          });
+          if (res.ok) {
+            tr.querySelector('.td-nombre').textContent = inputNombre;
+            tr.querySelector('.td-unidad').textContent = inputUnidad;
+            tr.querySelector('.td-precio').textContent = formatPrice(inputPrecio);
+            tr.querySelector('button[data-action="editar"]').style.display = 'inline-block';
+            tr.querySelector('button[data-action="guardar"]').style.display = 'none';
+            tr.querySelector('button[data-action="cancelar"]').style.display = 'none';
+            return alert('Material actualizado correctamente');
+          } else {
+            lastError = await res.text().catch(()=>null);
+          }
+        } catch (err) {
+          lastError = err;
+        }
+      }
+      console.error('No se actualizó. Último error:', lastError);
+      alert('No se pudo actualizar el material.');
+    }
+
+    // 🔍 Función de búsqueda
+    document.getElementById('searchInput').addEventListener('input', e => {
+      const term = e.target.value.trim().toLowerCase();
+      if (term === '') {
+        renderMateriales(materialesData);
+      } else {
+        const filtrados = materialesData.filter(m => {
+          const id = String(getField(m, 'IDmaterial', 'id', 'ID', 'Id')).toLowerCase();
+          const unidad = String(getField(m, 'Unidad', 'unidad', 'unit')).toLowerCase();
+          return id.includes(term) || unidad.includes(term);
+        });
+        renderMateriales(filtrados);
+      }
+    });
+
+    document.getElementById('clearSearch').addEventListener('click', () => {
+      document.getElementById('searchInput').value = '';
+      renderMateriales(materialesData);
+    });
+
+    document.addEventListener('DOMContentLoaded', cargarMateriales);
+  </script>
+</body>
+</html>
