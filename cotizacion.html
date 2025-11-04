@@ -1,220 +1,293 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Hacer Cotización</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #f2f4f8;
-            margin: 0;
-        }
+  <meta charset="UTF-8">
+  <title>Hacer Cotización</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
 
-        header {
-            background-color: #5c8374;
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      min-height: 100vh;
+      background-color: #f4f6f9;
+    }
 
-        header h1 {
-            margin: 0;
-            font-size: 28px;
-        }
+    .sidebar {
+      width: 230px;
+      background-color: #5a7f71;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+    }
+    .sidebar h2 { text-align:center; font-size:22px; margin-bottom:18px;}
+    .sidebar a {
+      color: white; text-decoration: none; padding: 12px 20px; display:block;
+      transition: background-color 0.2s; font-size: 16px;
+    }
+    .sidebar a:hover, .sidebar a.active { background-color: #4a6a5f; border-left:4px solid #fff; }
 
-        .container {
-            max-width: 800px;
-            margin: 40px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
+    .content {
+      margin-left: 230px;
+      padding: 30px;
+      width: calc(100% - 230px);
+    }
 
-        label {
-            font-weight: bold;
-            display: block;
-            margin-top: 20px;
-        }
+    header {
+      background-color: #5c8374;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    header h1 { margin: 0; font-size: 28px; }
 
-        select, input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            margin-top: 8px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-        }
+    .container {
+      max-width: 800px;
+      margin: 24px auto;
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.08);
+    }
 
-        .btn {
-            margin-top: 20px;
-            width: 100%;
-            padding: 12px;
-            background-color: #5c8374;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 16px;
+    }
 
-        .btn:hover {
-            background-color: #44665c;
-        }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 30px;
-        }
+    .btn {
+      margin-top: 18px;
+      width: 100%;
+      padding: 12px;
+      background-color: #5c8374;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.25s;
+    }
+    .btn:hover { background-color: #44665c; }
 
-        th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: center;
-        }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 22px;
+    }
 
-        th {
-            background-color: #e0e7ff;
-            color: #1e3a8a;
-        }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
 
-        #totalFinal {
-            margin-top: 20px;
-            font-size: 20px;
-            font-weight: bold;
-            text-align: right;
-        }
+    th {
+      background-color: #e7edff;
+      color: #1e3a8a;
+    }
 
-        .volver {
-            margin-top: 30px;
-            text-align: center;
-        }
+    #totalFinal {
+      margin-top: 16px;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: right;
+    }
 
-        .volver button {
-            background-color: #ccc;
-            color: black;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
+    .volver {
+      margin-top: 22px;
+      text-align: center;
+    }
 
-        .volver button:hover {
-            background-color: #bbb;
-        }
-    </style>
+    .volver button {
+      background-color: #ccc;
+      color: black;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .volver button:hover { background-color: #bbb; }
+
+    @media (max-width: 700px) {
+      .sidebar { display: none; }
+      .content { margin-left: 0; width: 100%; padding: 16px; }
+    }
+  </style>
 </head>
 <body>
 
+
+  <div class="sidebar">
+    <h2>Gestor de Obra</h2>
+    <a href="materiales.html">📋 Materiales</a>
+    <a href="materiales_generales.html">➕ Agregar material</a>
+    <a href="cotizacion.html" class="active">💰 Hacer cotización</a>
+    <a href="registro.html">📝 Registro</a>
+    <a href="estadisticas.html">📊 Estadísticas</a>
+    <a href="facturacion.html">🧾 Facturación</a>
+    <a href="proyectos.html">🏗️ Proyectos</a>
+    <a href="clientes.html">👥 Clientes y Proveedores</a>
+  </div>
+
+
+  <div class="content">
     <header>
-        <h1>Hacer Cotización</h1>
+      <h1>Hacer Cotización</h1>
     </header>
 
     <div class="container">
-        <label for="material">Selecciona un material:</label>
-        <select id="material"></select>
 
-        <label for="cantidad">Cantidad:</label>
-        <input type="number" id="cantidad" min="1" value="1">
+      <label for="ccCliente">Cédula del Cliente:</label>
+      <input type="text" id="ccCliente" placeholder="Ingrese la cédula del cliente">
 
-        <button class="btn" onclick="agregarMaterial()">Agregar</button>
 
-        <table id="tablaCotizacion">
-            <thead>
-                <tr>
-                    <th>Material</th>
-                    <th>Precio Unitario</th>
-                    <th>Cantidad</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+      <label for="material">Selecciona un material:</label>
+      <select id="material"></select>
 
-        <div id="totalFinal">Total: $0.00</div>
+      <label for="cantidad">Cantidad:</label>
+      <input type="number" id="cantidad" min="1" value="1">
 
-        <button class="btn" onclick="finalizarCotizacion()">Finalizar Cotización</button>
+      <button class="btn" onclick="agregarMaterial()">Agregar</button>
 
-        <div class="volver">
-            <button onclick="window.location.href='index.html'">Volver al Menú Principal</button>
-        </div>
+      <table id="tablaCotizacion">
+        <thead>
+          <tr>
+            <th>Material</th>
+            <th>Precio Unitario</th>
+            <th>Cantidad</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div id="totalFinal">Total: $0.00</div>
+
+      <button class="btn" onclick="finalizarCotizacion()">Finalizar Cotización</button>
+
+      <div class="volver">
+        <button onclick="window.location.href='registro.html'">Ver Registro de Cotizaciones</button>
+      </div>
     </div>
+  </div>
 
-    <script>
-        let materiales = [];
-        let totalFinal = 0;
+  <script>
+    let materiales = [];
+    let totalFinal = 0;
 
-        fetch('http://localhost:3000/cotizador')
-            .then(response => response.json())
-            .then(data => {
-                materiales = data;
-                const select = document.getElementById('material');
-                materiales.forEach(mat => {
-                    const option = document.createElement('option');
-                    option.value = mat.IDmaterial;
-                    option.textContent = `${mat.Nombre} (${mat.Unidad}) - $${mat.Precio}`;
-                    select.appendChild(option);
-                });
-            });
+    async function cargarMateriales() {
+      try {
+        const res = await fetch('http://localhost:3000/cotizador');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        materiales = await res.json();
 
-function agregarMaterial() {
-    const select = document.getElementById('material');
-    const cantidad = parseInt(document.getElementById('cantidad').value);
-    const materialID = select.value;
-    const material = materiales.find(m => m.IDmaterial == materialID);
+        const select = document.getElementById('material');
+        select.innerHTML = '';
+        materiales.forEach(mat => {
+          const option = document.createElement('option');
+          option.value = mat.IDmaterial;
+          option.textContent = `${mat.Nombre} (${mat.Unidad}) - $${Number(mat.Precio).toFixed(2)}`;
+          select.appendChild(option);
+        });
+      } catch (err) {
+        console.error('Error al cargar materiales:', err);
+        const tbody = document.querySelector('#tablaCotizacion tbody');
+        tbody.innerHTML = '<tr><td colspan="4">Error al cargar los materiales.</td></tr>';
+      }
+    }
 
-    if (!material || cantidad <= 0) return;
 
-    const precio = parseFloat(material.Precio);
-    const subtotal = precio * cantidad;
-    totalFinal += subtotal;
+    function agregarMaterial() {
+      const select = document.getElementById('material');
+      const cantidad = parseInt(document.getElementById('cantidad').value, 10);
+      const materialID = select.value;
+      const material = materiales.find(m => String(m.IDmaterial) === String(materialID));
 
-    const fila = document.createElement('tr');
-    fila.innerHTML = `
+      if (!material || cantidad <= 0) return;
+
+      const precio = parseFloat(material.Precio);
+      const subtotal = precio * cantidad;
+      totalFinal += subtotal;
+
+      const fila = document.createElement('tr');
+      fila.innerHTML = `
         <td>${material.Nombre}</td>
         <td>${precio.toFixed(2)}</td>
         <td>${cantidad}</td>
         <td>${subtotal.toFixed(2)}</td>
-    `;
+      `;
 
-    document.querySelector('#tablaCotizacion tbody').appendChild(fila);
-    document.getElementById('totalFinal').textContent = 'Total: $' + totalFinal.toFixed(2);
-}
+      document.querySelector('#tablaCotizacion tbody').appendChild(fila);
+      document.getElementById('totalFinal').textContent = 'Total: $' + totalFinal.toFixed(2);
+    }
 
 
-        function finalizarCotizacion() {
-            const filas = document.querySelectorAll('#tablaCotizacion tbody tr');
-            if (filas.length === 0) {
-                alert("Agrega al menos un material antes de finalizar.");
-                return;
-            }
+    async function finalizarCotizacion() {
+      const filas = document.querySelectorAll('#tablaCotizacion tbody tr');
+      const ccCliente = document.getElementById('ccCliente').value.trim();
 
-            const cotizacion = [];
+      if (!ccCliente) {
+        alert("Por favor, ingresa la cédula del cliente o proveedor.");
+        return;
+      }
 
-            filas.forEach(fila => {
-                const nombre = fila.children[0].textContent;
-                const precioUnitario = parseFloat(fila.children[1].textContent.replace('$', ''));
-                const cantidad = parseInt(fila.children[2].textContent);
-                cotizacion.push({ nombre, precioUnitario, cantidad });
-            });
+      if (filas.length === 0) {
+        alert("Agrega al menos un material antes de finalizar.");
+        return;
+      }
 
-            fetch('http://localhost:3000/finalizar-cotizacion', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ materiales: cotizacion, total: totalFinal })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message || "Cotización guardada con éxito");
-                location.reload();
-            })
-            .catch(error => {
-                alert("Hubo un error al guardar la cotización");
-                console.error(error);
-            });
-        }
-    </script>
+      const cotizacion = [];
+      filas.forEach(fila => {
+        const nombre = fila.children[0].textContent;
+        const precioUnitario = parseFloat(fila.children[1].textContent.replace('$','')) || parseFloat(fila.children[1].textContent);
+        const cantidad = parseInt(fila.children[2].textContent, 10);
+        cotizacion.push({ nombre, precioUnitario, cantidad });
+      });
 
+      try {
+        const res = await fetch('http://localhost:3000/finalizar-cotizacion', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            materiales: cotizacion,
+            total: totalFinal,
+            cc_cliente: ccCliente
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.message || 'Error en servidor');
+        alert(data.message || 'Cotización guardada con éxito');
+
+        document.querySelector('#tablaCotizacion tbody').innerHTML = '';
+        totalFinal = 0;
+        document.getElementById('totalFinal').textContent = 'Total: $0.00';
+        document.getElementById('ccCliente').value = '';
+      } catch (err) {
+        console.error('Error al guardar cotización:', err);
+        alert('Hubo un error al guardar la cotización. Revisa la consola del servidor.');
+      }
+    }
+
+
+    document.addEventListener('DOMContentLoaded', cargarMateriales);
+  </script>
 </body>
 </html>

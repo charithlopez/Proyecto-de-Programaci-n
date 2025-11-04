@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Clientes y Proveedores</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      min-height: 100vh;
+      background-color: #f4f6f9;
+    }
+    .sidebar {
+      width: 230px;
+      background-color: #5a7f71;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+    }
+    .sidebar h2 {
+      text-align: center;
+      font-size: 22px;
+      margin-bottom: 18px;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 12px 20px;
+      display: block;
+      transition: background-color 0.2s;
+      font-size: 16px;
+    }
+    .sidebar a:hover,
+    .sidebar a.active {
+      background-color: #4a6a5f;
+      border-left: 4px solid #fff;
+    }
+    .content {
+      margin-left: 230px;
+      padding: 30px;
+      width: calc(100% - 230px);
+    }
+    .content h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 14px;
+    }
+    .card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      padding: 20px;
+    }
+    table thead {
+      background-color: #e7edff;
+    }
+    table th, table td {
+      text-align: center;
+      vertical-align: middle;
+    }
+    .btn-custom {
+      background-color: #5a7f71;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+    .btn-edit {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 6px;
+    }
+    .btn-del {
+      background-color: #e11d48;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 6px;
+    }
+    .search-bar {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .search-bar input {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Gestor de Obra</h2>
+    <a href="materiales.html">📋 Materiales</a>
+    <a href="materiales_generales.html">➕ Agregar material</a>
+    <a href="cotizacion.html">💰 Hacer cotización</a>
+    <a href="registro.html">📝 Registro</a>
+    <a href="estadisticas.html">📊 Estadísticas</a>
+    <a href="facturacion.html">🧾 Facturación</a>
+    <a href="proyectos.html">🏗️ Proyectos</a>
+    <a href="clientes.html" class="active">👥 Clientes y Proveedores</a>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="content">
+    <h1>Clientes y Proveedores</h1>
+
+    <div class="card">
+      <p>Lista de clientes y proveedores registrados.</p>
+
+      <!-- 🔍 Barra de búsqueda -->
+      <div class="search-bar">
+        <input type="text" id="searchInput" class="form-control" placeholder="Buscar por nombre o CC...">
+        <button id="clearSearch" class="btn btn-secondary">Limpiar</button>
+        <button id="addCliente" class="btn btn-success"> Nuevo</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Tipo</th>
+              <th>CC</th>
+              <th>Teléfono</th>
+              <th>Correo</th>
+              <th>Opciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaClientes">
+            <tr><td colspan="6">Cargando datos...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para agregar/editar -->
+  <div class="modal fade" id="modalNuevo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTitle">Agregar Cliente o Proveedor</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formNuevo">
+            <input type="hidden" id="idCliente">
+            <div class="mb-3">
+              <label class="form-label">Nombre</label>
+              <input type="text" class="form-control" id="nombre" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tipo</label>
+              <select class="form-select" id="tipo" required>
+                <option value="">Seleccionar...</option>
+                <option value="Cliente">Cliente</option>
+                <option value="Proveedor">Proveedor</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Cédula / NIT</label>
+              <input type="text" class="form-control" id="cc" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Teléfono</label>
+              <input type="text" class="form-control" id="telefono">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Correo Electrónico</label>
+              <input type="email" class="form-control" id="correo">
+            </div>
+            <button type="submit" class="btn btn-success w-100">Guardar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const BASE = 'http://localhost:3000';
+    let clientesData = [];
+
+    async function cargarClientes() {
+      const tbody = document.getElementById('tablaClientes');
+      try {
+        const res = await fetch(`${BASE}/clientes`);
+        const data = await res.json();
+        clientesData = data;
+        renderClientes(data);
+      } catch (err) {
+        console.error('Error al cargar:', err);
+        tbody.innerHTML = `<tr><td colspan="6">⚠️ Error al cargar los clientes.</td></tr>`;
+      }
+    }
+
+    function renderClientes(data) {
+      const tbody = document.getElementById('tablaClientes');
+      if (!data.length) {
+        tbody.innerHTML = `<tr><td colspan="6">No hay registros.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = '';
+      data.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${c.nombre}</td>
+          <td>${c.tipo}</td>
+          <td>${c.cc}</td>
+          <td>${c.telefono || '-'}</td>
+          <td>${c.correo || '-'}</td>
+          <td>
+            <button class="btn btn-sm btn-primary me-1" onclick="editarCliente(${c.id})">Editar</button>
+            <button class="btn btn-sm btn-danger" onclick="eliminarCliente(${c.id})">Eliminar</button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById('addCliente').addEventListener('click', () => {
+      document.getElementById('formNuevo').reset();
+      document.getElementById('idCliente').value = '';
+      document.getElementById('modalTitle').textContent = 'Agregar Cliente o Proveedor';
+      new bootstrap.Modal(document.getElementById('modalNuevo')).show();
+    });
+
+    document.getElementById('formNuevo').addEventListener('submit', async e => {
+      e.preventDefault();
+      const id = document.getElementById('idCliente').value;
+      const cliente = {
+        nombre: nombre.value.trim(),
+        tipo: tipo.value,
+        cc: cc.value.trim(),
+        telefono: telefono.value.trim(),
+        correo: correo.value.trim()
+      };
+      const url = id ? `${BASE}/clientes/${id}` : `${BASE}/clientes`;
+      const method = id ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cliente)
+      });
+      if (res.ok) {
+        bootstrap.Modal.getInstance(document.getElementById('modalNuevo')).hide();
+        cargarClientes();
+      } else alert('Error al guardar');
+    });
+
+    async function editarCliente(id) {
+      const cliente = clientesData.find(c => c.id === id);
+      if (!cliente) return;
+      document.getElementById('modalTitle').textContent = 'Editar Cliente o Proveedor';
+      document.getElementById('idCliente').value = cliente.id;
+      document.getElementById('nombre').value = cliente.nombre;
+      document.getElementById('tipo').value = cliente.tipo;
+      document.getElementById('cc').value = cliente.cc;
+      document.getElementById('telefono').value = cliente.telefono;
+      document.getElementById('correo').value = cliente.correo;
+      new bootstrap.Modal(document.getElementById('modalNuevo')).show();
+    }
+
+    async function eliminarCliente(id) {
+      if (!confirm('¿Deseas eliminar este registro?')) return;
+      const res = await fetch(`${BASE}/clientes/${id}`, { method: 'DELETE' });
+      if (res.ok) cargarClientes();
+      else alert('Error al eliminar');
+    }
+
+    // 🔍 Buscar
+    document.getElementById('searchInput').addEventListener('input', e => {
+      const term = e.target.value.toLowerCase();
+      const filtrados = clientesData.filter(c =>
+        c.nombre.toLowerCase().includes(term) || String(c.cc).includes(term)
+      );
+      renderClientes(filtrados);
+    });
+
+    document.getElementById('clearSearch').addEventListener('click', () => {
+      document.getElementById('searchInput').value = '';
+      renderClientes(clientesData);
+    });
+
+    document.addEventListener('DOMContentLoaded', cargarClientes);
+  </script>
+</body>
+</html>

@@ -34,35 +34,36 @@ app.post('/agregar-material', (req, res) => {
 
 
 app.post('/finalizar-cotizacion', (req, res) => {
-    const { materiales, total } = req.body;
+    const { materiales, total, cc_cliente } = req.body;
 
     if (!materiales || materiales.length === 0) {
         return res.status(400).json({ error: 'No se proporcionaron materiales' });
     }
+    if (!cc_cliente) {
+        return res.status(400).json({ error: 'Falta la cédula del cliente o proveedor' });
+    }
 
-
-    const insertCotizacion = 'INSERT INTO cotizaciones (fecha, total) VALUES (NOW(), ?)';
-    conection.query(insertCotizacion, [total], (err, result) => {
+    const insertCotizacion = 'INSERT INTO cotizaciones (cc_cliente, fecha, total) VALUES (?, NOW(), ?)';
+    conection.query(insertCotizacion, [cc_cliente, total], (err, result) => {
         if (err) {
             console.error('Error al insertar cotización:', err);
             return res.status(500).json({ error: 'Error al guardar cotización', details: err });
         }
 
-        const idCotizacion = result.insertId; 
+        const idCotizacion = result.insertId;
         const insertDetalles = 'INSERT INTO detalles_cotizacion (id_cotizacion, nombre_material, cantidad, precio_unitario) VALUES ?';
-
         const detallesValores = materiales.map(mat => [
             idCotizacion,
             mat.nombre,
             mat.cantidad,
             mat.precioUnitario
         ]);
-        conection.query(insertDetalles, [detallesValores], (err2, result2) => {
+
+        conection.query(insertDetalles, [detallesValores], (err2) => {
             if (err2) {
                 console.error('Error al insertar detalles:', err2);
                 return res.status(500).json({ error: 'Error al guardar detalles', details: err2 });
             }
-
             res.status(200).json({ message: 'Cotización guardada correctamente' });
         });
     });
@@ -159,6 +160,60 @@ app.put('/actualizar-material/:id', (req, res) => {
         res.status(200).json({ message: 'Material actualizado correctamente' });
     });
 });
+
+
+// --- CLIENTES Y PROVEEDORES ---
+
+// Obtener todos los clientes o proveedores
+app.get('/clientes', (req, res) => {
+  conection.query('SELECT * FROM clientes', (error, results) => {
+    if (error) {
+      console.error('Error al obtener clientes:', error);
+      return res.status(500).json({ error: 'Error al obtener clientes' });
+    }
+    res.json(results);
+  });
+});
+
+// Agregar nuevo cliente o proveedor
+app.post('/clientes', (req, res) => {
+  const { nombre, tipo, cc, telefono, correo } = req.body;
+  const sql = 'INSERT INTO clientes (nombre, tipo, cc, telefono, correo) VALUES (?, ?, ?, ?, ?)';
+  conection.query(sql, [nombre, tipo, cc, telefono, correo], (error, result) => {
+    if (error) {
+      console.error('Error al agregar cliente/proveedor:', error);
+      return res.status(500).json({ error: 'Error al agregar cliente o proveedor' });
+    }
+    res.json({ id: result.insertId, message: 'Cliente o proveedor agregado correctamente' });
+  });
+});
+
+// Actualizar cliente/proveedor
+app.put('/clientes/:id', (req, res) => {
+  const { id } = req.params;
+  const { nombre, tipo, cc, telefono, correo } = req.body;
+  const sql = 'UPDATE clientes SET nombre=?, tipo=?, cc=?, telefono=?, correo=? WHERE id=?';
+  conection.query(sql, [nombre, tipo, cc, telefono, correo, id], (error) => {
+    if (error) {
+      console.error('Error al actualizar cliente/proveedor:', error);
+      return res.status(500).json({ error: 'Error al actualizar cliente o proveedor' });
+    }
+    res.json({ message: 'Cliente o proveedor actualizado correctamente' });
+  });
+});
+
+// Eliminar cliente/proveedor
+app.delete('/clientes/:id', (req, res) => {
+  const { id } = req.params;
+  conection.query('DELETE FROM clientes WHERE id=?', [id], (error) => {
+    if (error) {
+      console.error('Error al eliminar cliente/proveedor:', error);
+      return res.status(500).json({ error: 'Error al eliminar cliente o proveedor' });
+    }
+    res.json({ message: 'Cliente o proveedor eliminado correctamente' });
+  });
+});
+
 
 app.listen(port, () => {
     console.log(`Servidor escuchando en http://localhost:${port}`);

@@ -5,7 +5,7 @@
   <title>Estadísticas de Materiales</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* ====== Estilos generales ====== */
+
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
@@ -13,7 +13,7 @@
       display: flex;
     }
 
-    /* ====== Barra lateral (igual a materiales) ====== */
+
     .sidebar {
       height: 100vh;
       width: 220px;
@@ -52,9 +52,9 @@
       font-weight: bold;
     }
 
-    /* ====== Contenido principal ====== */
+
     .content {
-      margin-left: 220px; /* Igual al ancho de la barra lateral */
+      margin-left: 220px; 
       padding: 30px;
       flex: 1;
     }
@@ -102,7 +102,6 @@
 </head>
 <body>
 
-  <!-- ====== Barra lateral ====== -->
   <div class="sidebar">
     <h2>Gestor de Obra</h2>
     <a href="materiales.html">📋 Materiales</a>
@@ -115,7 +114,7 @@
     <a href="clientes.html">👥 Clientes y Proveedores</a>
   </div>
 
-  <!-- ====== Contenido principal ====== -->
+
   <div class="content">
     <h1>Estadísticas de Materiales</h1>
 
@@ -139,11 +138,11 @@
           return;
         }
 
-        // Extraer nombres de materiales y cantidades
+
         const etiquetas = data.map(item => item.nombre_material);
         const cantidades = data.map(item => item.total_cantidad);
 
-        // Crear gráfica de barras
+
         new Chart(ctx, {
           type: 'bar',
           data: {

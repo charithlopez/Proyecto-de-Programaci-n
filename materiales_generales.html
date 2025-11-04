@@ -110,7 +110,7 @@
         }
         const data = await res.json().catch(()=>null);
         msg.innerHTML = '<div class="text-success">Material agregado correctamente.</div>';
-        // redirigir a la lista de materiales después de 1s para que el usuario vea el mensaje
+
         setTimeout(() => window.location.href = 'materiales.html', 900);
       } catch (err) {
         console.error('Error al agregar material:', err);
