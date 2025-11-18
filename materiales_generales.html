@@ -23,17 +23,47 @@
       position: fixed;
       top: 0; left: 0; height: 100%;
     }
-    .sidebar h2 { text-align:center; font-size:22px; margin-bottom:18px;}
-    .sidebar a { color: white; text-decoration: none; padding: 12px 20px; display:block; transition: background-color 0.2s; font-size: 16px; }
-    .sidebar a:hover, .sidebar a.active { background-color: #4a6a5f; border-left: 4px solid #fff; }
+    .sidebar h2 { text-align:center; font-size:22px; margin-bottom:18px; }
+    .sidebar a { 
+      color: white; text-decoration: none; padding: 12px 20px; 
+      display:block; transition: background-color 0.2s; font-size: 16px; 
+    }
+    .sidebar a:hover, .sidebar a.active { 
+      background-color: #4a6a5f; 
+      border-left: 4px solid #fff; 
+    }
 
     .content { margin-left:230px; padding:30px; width: calc(100% - 230px); }
-    .content h1 { font-size:28px; color:#333; margin-bottom:14px; }
-    .card { background-color: white; border-radius:10px; padding:20px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+
+    .titulo-rectangulo {
+      background-color: #5a7f71;
+      color: white;
+      padding: 15px 22px;
+      border-radius: 10px;
+      font-size: 28px;
+      font-weight: bold;
+      width: 100%;
+      display: block;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .card {
+      background-color: white;
+      border-radius:10px; 
+      padding:20px; 
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
 
     .form-row { display:flex; gap:12px; flex-wrap:wrap; }
     .form-row .form-group { flex:1 1 200px; }
-    .btn-submit { background-color:#5a7f71; color:white; border:none; padding:8px 14px; border-radius:6px; }
+    .btn-submit { 
+      background-color:#5a7f71; 
+      color:white; 
+      border:none; 
+      padding:8px 14px; 
+      border-radius:6px; 
+    }
     .btn-submit:hover { background-color:#46695c; }
   </style>
 </head>
@@ -52,7 +82,9 @@
   </div>
 
   <div class="content">
-    <h1>Agregar Nuevo Material</h1>
+
+    <div class="titulo-rectangulo">Agregar Nuevo Material</div>
+
     <div class="card">
       <form id="formAgregar">
         <div class="form-row">

@@ -1,162 +1,274 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Registro de Cotizaciones</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #f2f4f8;
-            margin: 0;
-        }
+  <meta charset="UTF-8">
+  <title>Registro de Cotizaciones</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      min-height: 100vh;
+      background-color: #f4f6f9;
+    }
 
-        header {
-            background-color: #5c8374;
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
+    .sidebar {
+      width: 230px;
+      background-color: #5a7f71;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+    }
 
-        header h1 {
-            margin: 0;
-            font-size: 28px;
-        }
+    .sidebar h2 {
+      text-align: center;
+      font-size: 22px;
+      margin-bottom: 18px;
+    }
 
-        .container {
-            max-width: 900px;
-            margin: 40px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      padding: 12px 20px;
+      display: block;
+      transition: background-color 0.2s;
+      font-size: 16px;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-        }
+    .sidebar a:hover,
+    .sidebar a.active {
+      background-color: #4a6a5f;
+      border-left: 4px solid #fff;
+    }
 
-        th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: center;
-        }
+    /* === CONTENIDO === */
+    .content {
+      margin-left: 230px;
+      padding: 30px;
+      width: calc(100% - 230px);
+    }
 
-        th {
-            background-color: #e0e7ff;
-            color: #1e3a8a;
-        }
+    header {
+      background-color: #5c8374;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      border-radius: 8px;
+    }
 
-        .titulo-cotizacion {
-            background-color: #d3e4ff;
-            font-weight: bold;
-            text-align: left;
-        }
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
 
-        .total-cotizacion {
-            background-color: #f0f0f0;
-            font-weight: bold;
-            text-align: right;
-        }
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.08);
+    }
 
-        .volver {
-            text-align: center;
-        }
+    .search-box {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+    }
 
-        .volver button {
-            padding: 10px 20px;
-            background-color: #5c8374;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
+    .search-box input {
+      width: 100%;
+      max-width: 350px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
 
-        .volver button:hover {
-            background-color: #44665c;
-        }
-    </style>
+    .cotizacion {
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.05);
+      position: relative;
+    }
+
+    .cc-info {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 14px;
+      color: #333;
+      background-color: #e0e7e3;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .cotizacion h3 {
+      margin: 0 0 10px;
+      color: #1e3a8a;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #e0e7ff;
+      color: #1e3a8a;
+    }
+
+    .total {
+      font-weight: bold;
+      text-align: right;
+      margin-top: 10px;
+      color: #333;
+    }
+
+    .no-results {
+      text-align: center;
+      color: #777;
+      margin-top: 40px;
+      font-size: 16px;
+    }
+
+    @media (max-width: 700px) {
+      .sidebar { display: none; }
+      .content { margin-left: 0; width: 100%; padding: 16px; }
+    }
+  </style>
 </head>
 <body>
 
+  <div class="sidebar">
+    <h2>Gestor de Obra</h2>
+    <a href="materiales.html">📋 Materiales</a>
+    <a href="materiales_generales.html">➕ Agregar material</a>
+    <a href="cotizacion.html">💰 Hacer cotización</a>
+    <a href="registro.html" class="active">📝 Registro</a>
+    <a href="estadisticas.html">📊 Estadísticas</a>
+    <a href="facturacion.html">🧾 Facturación</a>
+    <a href="proyectos.html">🏗️ Proyectos</a>
+    <a href="clientes.html">👥 Clientes y Proveedores</a>
+  </div>
+
+  <div class="content">
     <header>
-        <h1>Registro de Cotizaciones</h1>
+      <h1>Registro de Cotizaciones</h1>
     </header>
 
     <div class="container">
-        <table id="tablaCompleta">
-            <tbody></tbody>
-        </table>
+      <div class="search-box">
+        <input type="text" id="buscarCC" placeholder="Buscar por cédula (CC)...">
+      </div>
 
-        <div class="volver">
-            <button onclick="window.location.href='index.html'">Volver al Menú Principal</button>
-        </div>
+      <div id="listaCotizaciones">
+        <p>Cargando cotizaciones...</p>
+      </div>
     </div>
+  </div>
 
-    <script>
-        fetch('http://localhost:3000/registro-completo')
-            .then(response => response.json())
-            .then(data => {
-                const tabla = document.querySelector('#tablaCompleta tbody');
-                tabla.innerHTML = '';
+  <script>
+    const contenedor = document.getElementById('listaCotizaciones');
+    const buscarInput = document.getElementById('buscarCC');
+    let todasLasCotizaciones = [];
 
-                const agrupado = {};
-                data.forEach(item => {
-                    const id = item.id_cotizacion;
-                    if (!agrupado[id]) {
-                        agrupado[id] = {
-                            fecha: item.fecha,
-                            materiales: []
-                        };
-                    }
-                    agrupado[id].materiales.push(item);
-                });
+    async function cargarCotizaciones() {
+      try {
+        const res = await fetch('http://localhost:3000/registro-completo');
+        const data = await res.json();
 
-                for (const [id, datos] of Object.entries(agrupado)) {
-                    const titulo = document.createElement('tr');
-                    titulo.innerHTML = `
-                        <td colspan="6" class="titulo-cotizacion">
-                            Cotización #${id} - ${new Date(datos.fecha).toLocaleString()}
-                        </td>`;
-                    tabla.appendChild(titulo);
+        const agrupadas = {};
+        data.forEach(item => {
+          if (!agrupadas[item.id_cotizacion]) {
+            agrupadas[item.id_cotizacion] = {
+              id: item.id_cotizacion,
+              fecha: item.fecha,
+              cc_cliente: item.cc_cliente || "Sin cédula",
+              materiales: []
+            };
+          }
+          agrupadas[item.id_cotizacion].materiales.push(item);
+        });
 
-                    const encabezado = document.createElement('tr');
-                    encabezado.innerHTML = `
-                        <th>Material</th>
-                        <th>Cantidad</th>
-                        <th>Precio Unitario</th>
-                        <th>Valor Total</th>
-                        <th colspan="2"></th>`;
-                    tabla.appendChild(encabezado);
+        todasLasCotizaciones = Object.values(agrupadas);
+        mostrarCotizaciones(todasLasCotizaciones);
 
-                    let total = 0;
-                    datos.materiales.forEach(item => {
-                        const valor = item.cantidad * item.precio_unitario;
-                        total += valor;
+      } catch (error) {
+        contenedor.innerHTML = "<p>Error al cargar las cotizaciones.</p>";
+        console.error(error);
+      }
+    }
 
-                        const fila = document.createElement('tr');
-                        fila.innerHTML = `
-                            <td>${item.nombre_material}</td>
-                            <td>${item.cantidad}</td>
-                            <td>$${Number(item.precio_unitario).toFixed(2)}</td>
-                            <td>$${Number(valor).toFixed(2)}</td>
-                            <td colspan="2"></td>`;
-                        tabla.appendChild(fila);
-                    });
+    function mostrarCotizaciones(lista) {
+      contenedor.innerHTML = "";
+      if (lista.length === 0) {
+        contenedor.innerHTML = '<p class="no-results">No se encontraron cotizaciones.</p>';
+        return;
+      }
 
-                    const filaTotal = document.createElement('tr');
-                    filaTotal.innerHTML = `
-                        <td colspan="3" class="total-cotizacion">Total Cotización:</td>
-                        <td class="total-cotizacion">$${total.toFixed(2)}</td>
-                        <td colspan="2"></td>`;
-                    tabla.appendChild(filaTotal);
-                }
-            })
-            .catch(err => {
-                document.querySelector('#tablaCompleta tbody').innerHTML = '<tr><td colspan="6">Error al cargar cotizaciones.</td></tr>';
-                console.error(err);
-            });
-    </script>
+      lista.forEach(cot => {
+        let total = 0;
+        const filas = cot.materiales.map(m => {
+          const subtotal = m.cantidad * m.precio_unitario;
+          total += subtotal;
+          return `
+            <tr>
+              <td>${m.nombre_material}</td>
+              <td>$${Number(m.precio_unitario).toFixed(2)}</td>
+              <td>${m.cantidad}</td>
+              <td>$${subtotal.toFixed(2)}</td>
+            </tr>`;
+        }).join('');
+
+        const div = document.createElement('div');
+        div.classList.add('cotizacion');
+        div.innerHTML = `
+          <span class="cc-info">CC: ${cot.cc_cliente}</span>
+          <h3>Cotización #${cot.id}</h3>
+          <p><strong>Fecha:</strong> ${new Date(cot.fecha).toLocaleString()}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Material</th>
+                <th>Precio Unitario</th>
+                <th>Cantidad</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>${filas}</tbody>
+          </table>
+          <p class="total">Total cotización: $${total.toFixed(2)}</p>
+        `;
+        contenedor.appendChild(div);
+      });
+    }
+    
+    buscarInput.addEventListener('input', () => {
+      const texto = buscarInput.value.trim();
+      const filtradas = todasLasCotizaciones.filter(c =>
+        c.cc_cliente && c.cc_cliente.toString().includes(texto)
+      );
+      mostrarCotizaciones(filtradas);
+    });
+
+    document.addEventListener('DOMContentLoaded', cargarCotizaciones);
+  </script>
 </body>
 </html>

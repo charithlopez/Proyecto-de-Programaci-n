@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Estadísticas de Materiales</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
 
     body {
@@ -13,10 +14,9 @@
       display: flex;
     }
 
-
     .sidebar {
       height: 100vh;
-      width: 220px;
+      width: 230px;
       background-color: #5d7d75;
       position: fixed;
       top: 0;
@@ -40,11 +40,22 @@
       display: block;
       font-size: 15px;
       font-weight: 500;
-      transition: background 0.3s;
+      position: relative;
+      transition: 0.3s;
     }
 
     .sidebar a:hover {
       background-color: #46625b;
+    }
+
+    .sidebar a:hover::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 5px;
+      height: 100%;
+      background: white;
     }
 
     .sidebar a.active {
@@ -52,18 +63,32 @@
       font-weight: bold;
     }
 
+    .sidebar a.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 5px;
+      height: 100%;
+      background: white;
+    }
 
     .content {
-      margin-left: 220px; 
+      margin-left: 230px;
       padding: 30px;
       flex: 1;
     }
 
-    h1 {
-      font-size: 26px;
-      margin-bottom: 20px;
-      color: #333;
+    .titulo-rect {
+      width: 100%;
+      background-color: #5d7d75;
+      color: white;
       text-align: center;
+      padding: 15px 0;
+      border-radius: 10px;
+      font-size: 26px;
+      font-weight: bold;
+      margin-bottom: 25px;
     }
 
     .container {
@@ -98,6 +123,7 @@
     .volver button:hover {
       background-color: #44665c;
     }
+
   </style>
 </head>
 <body>
@@ -114,9 +140,9 @@
     <a href="clientes.html">👥 Clientes y Proveedores</a>
   </div>
 
-
   <div class="content">
-    <h1>Estadísticas de Materiales</h1>
+
+    <div class="titulo-rect">Estadísticas de Materiales</div>
 
     <div class="container">
       <canvas id="graficaMateriales"></canvas>
@@ -138,10 +164,8 @@
           return;
         }
 
-
         const etiquetas = data.map(item => item.nombre_material);
         const cantidades = data.map(item => item.total_cantidad);
-
 
         new Chart(ctx, {
           type: 'bar',
@@ -160,17 +184,12 @@
               legend: {
                 display: true,
                 position: 'top'
-              },
-              title: {
-                display: false
               }
             },
             scales: {
               y: {
                 beginAtZero: true,
-                ticks: {
-                  precision: 0
-                }
+                ticks: { precision: 0 }
               },
               x: {
                 ticks: {

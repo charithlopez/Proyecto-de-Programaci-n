@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Gestión de Proyectos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <style>
+        /* -----------------------------------------------------------
+           ESTILOS GENERALES
+        ------------------------------------------------------------ */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            min-height: 100vh;
+            background-color: #f4f6f9;
+        }
+
+        /* -----------------------------------------------------------
+           SIDEBAR
+        ------------------------------------------------------------ */
+        .sidebar {
+            width: 230px;
+            background-color: #5a7f71;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 18px;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            display: block;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: #4a6a5f;
+            border-left: 4px solid #fff;
+        }
+
+        /* -----------------------------------------------------------
+           CONTENIDO
+        ------------------------------------------------------------ */
+        .content {
+            margin-left: 230px;
+            padding: 30px;
+            width: calc(100% - 230px);
+        }
+
+        header {
+            background-color: #5c8374;
+            color: white;
+            padding: 12px 0;
+            border-radius: 8px;
+            text-align: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        /* -----------------------------------------------------------
+           TARJETAS Y CONTENEDORES
+        ------------------------------------------------------------ */
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.08);
+        }
+
+        .proyecto {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 20px;
+            background: white;
+            margin-bottom: 20px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.05);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .info-item {
+            width: 48%;
+            margin: 5px 0;
+            font-size: 15px;
+        }
+
+        /* -----------------------------------------------------------
+           BOTONES
+        ------------------------------------------------------------ */
+        .acciones button {
+            padding: 10px 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-right: 8px;
+            background-color: #5c8374;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0px 3px 6px rgba(0,0,0,0.15);
+            transition: transform 0.15s, background-color 0.2s,
+                        box-shadow 0.2s;
+        }
+
+        .acciones button:hover {
+            background-color: #44665c;
+            transform: translateY(-2px);
+            box-shadow: 0px 5px 10px rgba(0,0,0,0.20);
+        }
+
+        .btn-nuevo {
+            background-color: #4a6a5f;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            cursor: pointer;
+            margin-bottom: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0px 3px 6px rgba(0,0,0,0.15);
+            transition: transform 0.15s, background-color 0.2s,
+                        box-shadow 0.2s;
+        }
+
+        .btn-nuevo:hover {
+            background-color: #39564d;
+            transform: translateY(-2px);
+            box-shadow: 0px 5px 10px rgba(0,0,0,0.20);
+        }
+
+        /* -----------------------------------------------------------
+           MODALES
+        ------------------------------------------------------------ */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .modal-content input,
+        .modal-content select {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        /* -----------------------------------------------------------
+           LISTA COTIZACIONES
+        ------------------------------------------------------------ */
+        .coti-lista {
+            margin-top: 15px;
+            background: #eef2ef;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #cbd5d1;
+        }
+
+        .coti-item {
+            padding: 12px;
+            background: #f9f9f9;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #cbd5d1;
+        }
+
+        .coti-item strong {
+            color: #5c8374;
+        }
+
+        .fact-box {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #cbd5d1;
+            margin-bottom: 10px;
+        }
+
+        /* -----------------------------------------------------------
+           MODAL VER COTIZACIONES
+        ------------------------------------------------------------ */
+        #modalVer .modal-content {
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            padding-top: 50px;
+        }
+
+        #modalVer .btn-regresar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 6px 12px;
+            background-color: #5c8374;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* -----------------------------------------------------------
+           TABLAS
+        ------------------------------------------------------------ */
+        .detalles-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .detalles-table th,
+        .detalles-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .detalles-table th {
+            background: #e0e7ff;
+            color: #1e3a8a;
+        }
+
+        .total-label {
+            text-align: right;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #2d4f46;
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <!-- -----------------------------------------------------------
+         SIDEBAR
+    ------------------------------------------------------------ -->
+    <div class="sidebar">
+        <h2>Gestor de Obra</h2>
+
+        <a href="materiales.html">📋 Materiales</a>
+        <a href="materiales_generales.html">➕ Agregar material</a>
+        <a href="cotizacion.html">💰 Hacer cotización</a>
+        <a href="registro.html">📝 Registro</a>
+        <a href="estadisticas.html">📊 Estadísticas</a>
+        <a href="facturacion.html">🧾 Facturación</a>
+        <a href="proyectos.html" class="active">🏗️ Proyectos</a>
+        <a href="clientes.html">👥 Clientes y Proveedores</a>
+    </div>
+
+
+    <!-- -----------------------------------------------------------
+         CONTENIDO PRINCIPAL
+    ------------------------------------------------------------ -->
+    <div class="content">
+
+        <header>
+            <h1>Gestión de Proyectos</h1>
+        </header>
+
+        <div class="container">
+
+            <button class="btn-nuevo" onclick="abrirModalNuevo()">
+                ➕ Nuevo Proyecto
+            </button>
+
+            <div id="listaProyectos">Cargando...</div>
+
+        </div>
+    </div>
+
+
+    <!-- -----------------------------------------------------------
+         MODAL NUEVO PROYECTO
+    ------------------------------------------------------------ -->
+    <div class="modal" id="modalNuevo">
+        <div class="modal-content">
+            <h3>Nuevo Proyecto</h3>
+
+            <input type="text" id="nombreProyecto" placeholder="Nombre del proyecto" />
+            <input type="text" id="clienteProyecto" placeholder="Cliente" />
+
+            <label>Fecha inicio:</label>
+            <input type="date" id="fechaInicio" />
+
+            <label>Fecha final:</label>
+            <input type="date" id="fechaFinal" />
+
+            <button onclick="guardarProyecto()">Guardar</button>
+            <button onclick="cerrarModalNuevo()">Cancelar</button>
+        </div>
+    </div>
+
+
+    <!-- -----------------------------------------------------------
+         MODAL EDITAR PROYECTO
+    ------------------------------------------------------------ -->
+    <div class="modal" id="modalEditar">
+        <div class="modal-content">
+            <h3>Editar Proyecto</h3>
+
+            <input id="editNombre" placeholder="Nombre del proyecto" />
+            <input id="editCliente" placeholder="Cliente" />
+            <input id="editInicio" type="date" />
+            <input id="editFinal" type="date" />
+            <input id="editEstado" placeholder="Estado" />
+
+            <button onclick="guardarEdicion()">Guardar cambios</button>
+            <button onclick="cerrarModalEditar()">Cancelar</button>
+        </div>
+    </div>
+
+
+    <!-- -----------------------------------------------------------
+         MODAL ASOCIAR COTIZACIÓN
+    ------------------------------------------------------------ -->
+    <div class="modal" id="modalAsociar">
+        <div class="modal-content">
+            <h3>Asociar Cotización</h3>
+
+            <input type="number" id="buscarId" placeholder="ID de la cotización" />
+            <button onclick="buscarCotizacion()">Buscar</button>
+
+            <div id="resultadoBusqueda"></div>
+
+            <button onclick="confirmarAsociar()">Asociar</button>
+            <button onclick="cerrarModalAsociar()">Cancelar</button>
+        </div>
+    </div>
+
+
+    <!-- -----------------------------------------------------------
+         MODAL VER COTIZACIONES
+    ------------------------------------------------------------ -->
+    <div class="modal" id="modalVer">
+        <div class="modal-content">
+            <div id="listaCoti"></div>
+        </div>
+    </div>
+
+
+    <!-- -----------------------------------------------------------
+         SCRIPTS
+    ------------------------------------------------------------ -->
+    <script>
+        let proyectoEditando = null;
+        let proyectoAsociando = null;
+        let cotizacionBuscada = null;
+
+        const modalEditar     = document.getElementById("modalEditar");
+        const modalAsociar    = document.getElementById("modalAsociar");
+        const modalVer        = document.getElementById("modalVer");
+        const resultadoBusqueda = document.getElementById("resultadoBusqueda");
+        const listaCoti         = document.getElementById("listaCoti");
+
+        /* -----------------------------------------------------------
+           FORMATEAR FECHA
+        ------------------------------------------------------------ */
+        function formatearFecha(f) {
+            if (!f) return "";
+
+            const fecha = new Date(f);
+
+            return `${String(fecha.getUTCDate()).padStart(2, '0')}-${
+                    String(fecha.getUTCMonth() + 1).padStart(2, '0')
+                }-${fecha.getUTCFullYear()}`;
+        }
+
+
+        /* -----------------------------------------------------------
+           CARGAR PROYECTOS
+        ------------------------------------------------------------ */
+        async function cargarProyectos() {
+            const res = await fetch("http://localhost:3000/proyectos");
+            const data = await res.json();
+            mostrarProyectos(data);
+        }
+
+
+        /* -----------------------------------------------------------
+           MOSTRAR PROYECTOS
+        ------------------------------------------------------------ */
+        function mostrarProyectos(lista) {
+            const cont = document.getElementById("listaProyectos");
+            cont.innerHTML = "";
+
+            lista.forEach(p => {
+                const div = document.createElement("div");
+                div.className = "proyecto";
+
+                div.innerHTML = `
+                    <h3>${p.nombre_proyecto}</h3>
+
+                    <div class="info-row">
+                        <div class="info-item">
+                            <strong>Cliente:</strong> ${p.cliente}
+                        </div>
+
+                        <div class="info-item">
+                            <strong>Inicio:</strong> ${formatearFecha(p.fecha_inicio)}
+                        </div>
+
+                        <div class="info-item">
+                            <strong>Final:</strong> ${formatearFecha(p.fecha_final)}
+                        </div>
+
+                        <div class="info-item">
+                            <strong>Estado:</strong> ${p.estado}
+                        </div>
+                    </div>
+
+                    <div class="acciones">
+                        <button
+                            onclick='abrirEditar(
+                                ${p.id},
+                                ${JSON.stringify(p.nombre_proyecto)},
+                                ${JSON.stringify(p.cliente)},
+                                ${JSON.stringify(p.fecha_inicio)},
+                                ${JSON.stringify(p.fecha_final)},
+                                ${JSON.stringify(p.estado)}
+                            )'
+                        >✏️ Editar</button>
+
+                        <button onclick="abrirAsociar(${p.id})">
+                            ➕ Asociar cotización
+                        </button>
+
+                        <button onclick="verCotizaciones(${p.id})">
+                            📄 Ver cotizaciones
+                        </button>
+                    </div>
+                `;
+
+                cont.appendChild(div);
+            });
+        }
+
+
+        /* -----------------------------------------------------------
+           MODAL NUEVO PROYECTO
+        ------------------------------------------------------------ */
+        function abrirModalNuevo() {
+            modalNuevo.style.display = "flex";
+        }
+
+        function cerrarModalNuevo() {
+            modalNuevo.style.display = "none";
+        }
+
+        async function guardarProyecto() {
+            const data = {
+                nombre_proyecto: nombreProyecto.value,
+                cliente: clienteProyecto.value,
+                fecha_inicio: fechaInicio.value,
+                fecha_final: fechaFinal.value
+            };
+
+            await fetch("http://localhost:3000/proyectos", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            cerrarModalNuevo();
+            cargarProyectos();
+        }
+
+
+        /* -----------------------------------------------------------
+           MODAL EDITAR PROYECTO
+        ------------------------------------------------------------ */
+        function abrirEditar(id, nombre, cliente, inicio, final, estado) {
+            proyectoEditando = id;
+
+            editNombre.value = nombre;
+            editCliente.value = cliente;
+            editInicio.value = inicio;
+            editFinal.value = final;
+            editEstado.value = estado;
+
+            modalEditar.style.display = "flex";
+        }
+
+        function cerrarModalEditar() {
+            modalEditar.style.display = "none";
+        }
+
+        async function guardarEdicion() {
+            const data = {
+                nombre_proyecto: editNombre.value,
+                cliente: editCliente.value,
+                fecha_inicio: editInicio.value,
+                fecha_final: editFinal.value,
+                estado: editEstado.value
+            };
+
+            await fetch(`http://localhost:3000/proyectos/${proyectoEditando}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            cerrarModalEditar();
+            cargarProyectos();
+        }
+
+
+        /* -----------------------------------------------------------
+           ASOCIAR COTIZACIÓN
+        ------------------------------------------------------------ */
+        function abrirAsociar(id) {
+            proyectoAsociando = id;
+            resultadoBusqueda.innerHTML = "";
+            buscarId.value = "";
+            cotizacionBuscada = null;
+            modalAsociar.style.display = "flex";
+        }
+
+        function cerrarModalAsociar() {
+            modalAsociar.style.display = "none";
+        }
+
+        async function buscarCotizacion() {
+            const id = buscarId.value;
+            const res = await fetch(`http://localhost:3000/facturacion/${id}`);
+            const data = await res.json();
+
+            if (!data.length) {
+                resultadoBusqueda.innerHTML =
+                    "<p>No existe una cotización con ese ID.</p>";
+                return;
+            }
+
+            cotizacionBuscada = id;
+
+            resultadoBusqueda.innerHTML = `
+                <div class="fact-box">
+                    <h4>Cotización #${id}</h4>
+
+                    <p><strong>Cliente:</strong> ${data[0].cc_cliente}</p>
+                    <p><strong>Fecha:</strong> ${formatearFecha(data[0].fecha)}</p>
+
+                    <h4>Materiales:</h4>
+
+                    ${data
+                        .map(
+                            x => `
+                        <div style="border-bottom:1px solid #ddd; padding:4px;">
+                            ${x.nombre_material} - ${x.cantidad} x $${x.precio_unitario}
+                        </div>
+                    `
+                        )
+                        .join("")}
+                </div>
+            `;
+        }
+
+        async function confirmarAsociar() {
+            if (!cotizacionBuscada) {
+                alert("Primero busca una cotización");
+                return;
+            }
+
+            await fetch(
+                `http://localhost:3000/proyectos/${proyectoAsociando}/cotizaciones`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id_cotizacion: cotizacionBuscada })
+                }
+            );
+
+            alert("Cotización asociada con éxito");
+            cerrarModalAsociar();
+        }
+
+
+        /* -----------------------------------------------------------
+           VER COTIZACIONES (NUEVO DISEÑO COMPLETO)
+        ------------------------------------------------------------ */
+        async function verCotizaciones(id) {
+            modalVer.style.display = "flex";
+
+            const res = await fetch(
+                `http://localhost:3000/proyectos/${id}/cotizaciones`
+            );
+            const data = await res.json();
+
+            if (!data.length) {
+                listaCoti.innerHTML = "<p>No hay cotizaciones asociadas.</p>";
+                return;
+            }
+
+            const detallesPromises = data.map(async c => {
+                try {
+                    const r = await fetch(
+                        `http://localhost:3000/facturacion/${c.id}`
+                    );
+                    const det = await r.json();
+
+                    const detalles = det.map(d => ({
+                        nombre_material:
+                            d.nombre_material ?? d.Nombre ?? d.nombre,
+                        precio_unitario: Number(
+                            d.precio_unitario ?? d.Precio ?? d.precio ?? 0
+                        ),
+                        cantidad: Number(
+                            d.cantidad ?? d.Cantidad ?? d.cant ?? 0
+                        ),
+                        subtotal: Number(
+                            (d.cantidad ?? d.Cantidad ?? d.cant ?? 0) *
+                                (d.precio_unitario ??
+                                    d.Precio ??
+                                    d.precio ??
+                                    0)
+                        )
+                    }));
+
+                    return { ...c, detalles };
+                } catch (err) {
+                    return { ...c, detalles: [] };
+                }
+            });
+
+            const cotizacionesConDetalles = await Promise.all(
+                detallesPromises
+            );
+
+            listaCoti.innerHTML = `
+                <button class="btn-regresar" onclick="cerrarModalVer()">
+                    ⬅️ Regresar
+                </button>
+
+                <div class="coti-lista">
+
+                    ${cotizacionesConDetalles
+                        .map(c => {
+                            let totalCalc = 0;
+
+                            const filas = c.detalles
+                                .map(d => {
+                                    totalCalc += Number(d.subtotal || 0);
+
+                                    return `
+                                        <tr>
+                                            <td>${d.nombre_material}</td>
+                                            <td>
+                                                $${Number(
+                                                    d.precio_unitario
+                                                ).toFixed(2)}
+                                            </td>
+                                            <td>${d.cantidad}</td>
+                                            <td>
+                                                $${Number(
+                                                    d.subtotal
+                                                ).toFixed(2)}
+                                            </td>
+                                        </tr>
+                                    `;
+                                })
+                                .join("");
+
+                            const totalFinal =
+                                c.detalles.length > 0
+                                    ? totalCalc
+                                    : Number(c.total || 0);
+
+                            return `
+                                <div class="coti-item">
+
+                                    <p><strong>CC:</strong> ${c.cc_cliente}</p>
+                                    <p><strong>Cotización #${c.id}</strong></p>
+                                    <p>
+                                        <strong>Fecha:</strong>
+                                        ${new Date(
+                                            c.fecha
+                                        ).toLocaleString()}
+                                    </p>
+
+                                    <table class="detalles-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Material</th>
+                                                <th>Precio Unitario</th>
+                                                <th>Cantidad</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            ${
+                                                filas ||
+                                                `<tr>
+                                                    <td colspan="4">
+                                                        No hay detalles disponibles
+                                                    </td>
+                                                </tr>`
+                                            }
+                                        </tbody>
+                                    </table>
+
+                                    <p class="total-label">
+                                        Total cotización:
+                                        $${Number(totalFinal).toFixed(2)}
+                                    </p>
+
+                                </div>
+                            `;
+                        })
+                        .join("")}
+
+                </div>
+            `;
+        }
+
+        function cerrarModalVer() {
+            modalVer.style.display = "none";
+        }
+
+        document.addEventListener("DOMContentLoaded", cargarProyectos);
+    </script>
+
+</body>
+</html>

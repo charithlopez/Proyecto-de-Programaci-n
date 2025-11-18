@@ -2,8 +2,8 @@ const mysql = require('mysql2');
 
 const conection = mysql.createConnection({
     host: 'localhost',
-    user: 'root',       // o tu usuario de MySQL
-    password: '',       // tu contraseña de MySQL (vacía si no tienes)
+    user: 'root',       
+    password: '',       
     database: 'gestor_obra'
 });
 

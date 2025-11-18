@@ -13,6 +13,7 @@
       min-height: 100vh;
       background-color: #f4f6f9;
     }
+
     .sidebar {
       width: 230px;
       background-color: #5a7f71;
@@ -37,7 +38,19 @@
       padding: 30px;
       width: calc(100% - 230px);
     }
-    .content h1 { font-size:28px; font-weight:700; color:#333; margin-bottom:14px; }
+
+    .titulo-rectangulo {
+      background-color: #5a7f71;
+      color: white;
+      padding: 15px 22px;
+      border-radius: 10px;
+      font-size: 28px;
+      font-weight: bold;
+      width: 100%;
+      display: block;
+      margin-bottom: 25px;
+      text-align: center;
+    }
 
     .card {
       background-color: white;
@@ -51,7 +64,6 @@
     .btn-custom { background-color: #5a7f71; color: white; border: none; padding:6px 10px; border-radius:6px; }
     .btn-edit { background-color:#2563eb; color:white; border:none; padding:5px 10px; border-radius:6px; }
     .btn-del { background-color:#e11d48; color:white; border:none; padding:5px 10px; border-radius:6px; }
-    .small-muted { color:#6b7280; font-size:0.95rem; margin-bottom:10px; }
 
     .search-bar {
       margin-bottom: 15px;
@@ -59,14 +71,12 @@
       gap: 10px;
       align-items: center;
     }
-    .search-bar input {
-      flex: 1;
-    }
+    .search-bar input { flex: 1; }
+
   </style>
 </head>
-<body>
 
-  <!-- Sidebar -->
+<body>
   <div class="sidebar">
     <h2>Gestor de Obra</h2>
     <a href="materiales.html" class="active">📋 Materiales</a>
@@ -79,14 +89,10 @@
     <a href="clientes.html">👥 Clientes y Proveedores</a>
   </div>
 
-  <!-- Content -->
   <div class="content">
-    <h1>Materiales Registrados</h1>
+    <div class="titulo-rectangulo">Materiales Registrados</div>
 
     <div class="card">
-      <div class="small-muted">Lista de materiales disponibles en la base de datos. Puedes buscar por ID o unidad, y editar cada fila.</div>
-
-      <!-- 🔍 Barra de búsqueda -->
       <div class="search-bar">
         <input type="text" id="searchInput" class="form-control" placeholder="Buscar por ID o Unidad...">
         <button id="clearSearch" class="btn btn-secondary">Limpiar</button>
@@ -96,13 +102,14 @@
         <table class="table table-bordered table-hover">
           <thead>
             <tr>
-              <th style="width:6%;">ID</th>
+              <th>ID</th>
               <th>Nombre</th>
-              <th style="width:14%;">Unidad</th>
-              <th style="width:14%;">Precio</th>
-              <th style="width:20%;">Acciones</th>
+              <th>Unidad</th>
+              <th>Precio</th>
+              <th>Acciones</th>
             </tr>
           </thead>
+
           <tbody id="tablaMateriales">
             <tr><td colspan="5">Cargando materiales...</td></tr>
           </tbody>
@@ -111,170 +118,151 @@
     </div>
   </div>
 
-  <script>
-    const BASE = 'http://localhost:3000';
-    let materialesData = []; // guardamos todos los materiales aquí
+<script>
+  const BASE = 'http://localhost:3000';
+  let materialesData = [];
 
-    function getField(m, ...keys) {
-      for (const k of keys) if (m[k] !== undefined && m[k] !== null) return m[k];
-      return '';
+  function getField(m, ...keys) {
+    for (const k of keys) if (m[k] !== undefined && m[k] !== null) return m[k];
+    return '';
+  }
+
+  function formatPrice(v) {
+    const n = parseFloat(v);
+    return isNaN(n) ? v : '$' + n.toFixed(2);
+  }
+
+  async function cargarMateriales() {
+    const tbody = document.getElementById('tablaMateriales');
+    try {
+      const res = await fetch(`${BASE}/cotizador`);
+      if (!res.ok) throw new Error();
+
+      const data = await res.json();
+      materialesData = data;
+      renderMateriales(data);
+
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="5">Error al cargar materiales.</td></tr>`;
+    }
+  }
+
+  function renderMateriales(data) {
+    const tbody = document.getElementById('tablaMateriales');
+
+    if (!data.length) {
+      tbody.innerHTML = `<tr><td colspan="5">No hay materiales registrados.</td></tr>`;
+      return;
     }
 
-    function formatPrice(v) {
-      const n = parseFloat(v);
-      if (isNaN(n)) return v;
-      return '$' + n.toFixed(2);
-    }
+    tbody.innerHTML = '';
 
-    async function cargarMateriales() {
-      const tbody = document.getElementById('tablaMateriales');
-      try {
-        const res = await fetch(`${BASE}/cotizador`);
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
+    data.forEach(m => {
+      const id = getField(m, 'IDmaterial','id','ID','Id');
+      const nombre = getField(m, 'Nombre','nombre');
+      const unidad = getField(m, 'Unidad','unidad');
+      const precioRaw = getField(m, 'Precio','precio');
 
-        materialesData = data;
-        renderMateriales(data);
+      const tr = document.createElement('tr');
+      tr.dataset.id = id;
 
-      } catch (err) {
-        console.error('Error al cargar materiales:', err);
-        tbody.innerHTML = `<tr><td colspan="5">Error al cargar los materiales.</td></tr>`;
-      }
-    }
+      tr.innerHTML = `
+        <td>${id}</td>
+        <td class="td-nombre">${nombre}</td>
+        <td class="td-unidad">${unidad}</td>
+        <td class="td-precio">${formatPrice(precioRaw)}</td>
+        <td>
+          <button class="btn-edit" data-action="editar">Editar</button>
+          <button class="btn-custom" data-action="guardar" style="display:none">Guardar</button>
+          <button class="btn-custom" data-action="cancelar" style="display:none">Cancelar</button>
+        </td>
+      `;
 
-    function renderMateriales(data) {
-      const tbody = document.getElementById('tablaMateriales');
-      if (!Array.isArray(data) || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5">No hay materiales registrados.</td></tr>`;
-        return;
-      }
+      tbody.appendChild(tr);
 
-      tbody.innerHTML = '';
-      data.forEach(m => {
-        const id = getField(m, 'IDmaterial', 'id', 'ID', 'Id');
-        const nombre = getField(m, 'Nombre', 'nombre', 'name');
-        const unidad = getField(m, 'Unidad', 'unidad', 'unit');
-        const precioRaw = getField(m, 'Precio', 'precio', 'price');
+      tr.querySelector('[data-action="editar"]').onclick = () => iniciarEdicion(tr);
+      tr.querySelector('[data-action="guardar"]').onclick = () => guardarEdicion(tr);
+      tr.querySelector('[data-action="cancelar"]').onclick = () => cancelarEdicion(tr, { nombre, unidad, precioRaw });
+    });
+  }
 
-        const tr = document.createElement('tr');
-        tr.dataset.id = id;
-        tr.innerHTML = `
-          <td>${id}</td>
-          <td class="td-nombre">${escapeHtml(nombre)}</td>
-          <td class="td-unidad">${escapeHtml(unidad)}</td>
-          <td class="td-precio">${escapeHtml(formatPrice(precioRaw))}</td>
-          <td>
-            <button class="btn-edit" data-action="editar">Editar</button>
-            <button class="btn-custom" data-action="guardar" style="display:none">Guardar</button>
-            <button class="btn-custom" data-action="cancelar" style="display:none">Cancelar</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
+  function iniciarEdicion(tr) {
+    const nombre = tr.querySelector('.td-nombre').textContent.trim();
+    const unidad = tr.querySelector('.td-unidad').textContent.trim();
+    const precio = tr.querySelector('.td-precio').textContent.replace('$','').trim();
 
-        tr.querySelector('button[data-action="editar"]').addEventListener('click', () => iniciarEdicion(tr));
-        tr.querySelector('button[data-action="guardar"]').addEventListener('click', () => guardarEdicion(tr));
-        tr.querySelector('button[data-action="cancelar"]').addEventListener('click', () => cancelarEdicion(tr, { nombre, unidad, precioRaw }));
+    tr.querySelector('.td-nombre').innerHTML = `<input class="form-control input-nombre" value="${nombre}">`;
+    tr.querySelector('.td-unidad').innerHTML = `<input class="form-control input-unidad" value="${unidad}">`;
+    tr.querySelector('.td-precio').innerHTML = `<input type="number" step="0.01" class="form-control input-precio" value="${precio}">`;
+
+    tr.querySelector('[data-action="editar"]').style.display = 'none';
+    tr.querySelector('[data-action="guardar"]').style.display = 'inline-block';
+    tr.querySelector('[data-action="cancelar"]').style.display = 'inline-block';
+  }
+
+  function cancelarEdicion(tr, original) {
+    tr.querySelector('.td-nombre').textContent = original.nombre;
+    tr.querySelector('.td-unidad').textContent = original.unidad;
+    tr.querySelector('.td-precio').textContent = formatPrice(original.precioRaw);
+
+    tr.querySelector('[data-action="editar"]').style.display = 'inline-block';
+    tr.querySelector('[data-action="guardar"]').style.display = 'none';
+    tr.querySelector('[data-action="cancelar"]').style.display = 'none';
+  }
+
+  async function guardarEdicion(tr) {
+    const id = tr.dataset.id;
+
+    const nombre = tr.querySelector('.input-nombre').value.trim();
+    const unidad = tr.querySelector('.input-unidad').value.trim();
+    const precio = parseFloat(tr.querySelector('.input-precio').value);
+
+    if (!nombre) return alert("El nombre no puede ir vacío");
+    if (!unidad) return alert("La unidad no puede ir vacía");
+    if (isNaN(precio)) return alert("Precio inválido");
+
+    try {
+      const res = await fetch(`${BASE}/cotizador/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, unidad, precio })
       });
+
+      if (!res.ok) return alert("Error al actualizar el material");
+
+      tr.querySelector('.td-nombre').textContent = nombre;
+      tr.querySelector('.td-unidad').textContent = unidad;
+      tr.querySelector('.td-precio').textContent = formatPrice(precio);
+
+      tr.querySelector('[data-action="editar"]').style.display = 'inline-block';
+      tr.querySelector('[data-action="guardar"]').style.display = 'none';
+      tr.querySelector('[data-action="cancelar"]').style.display = 'none';
+
+      alert("Material actualizado correctamente");
+
+    } catch (e) {
+      alert("No se pudo conectar con el servidor");
     }
+  }
 
-    function escapeHtml(str) {
-      if (str === null || str === undefined) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
+  document.getElementById('searchInput').addEventListener('input', e => {
+    const term = e.target.value.toLowerCase().trim();
+    if (!term) return renderMateriales(materialesData);
 
-    function iniciarEdicion(tr) {
-      const tdNombre = tr.querySelector('.td-nombre');
-      const tdUnidad = tr.querySelector('.td-unidad');
-      const tdPrecio = tr.querySelector('.td-precio');
+    const filtrados = materialesData.filter(m =>
+      String(getField(m,'IDmaterial')).toLowerCase().includes(term) ||
+      String(getField(m,'Unidad')).toLowerCase().includes(term)
+    );
+    renderMateriales(filtrados);
+  });
 
-      const nombreVal = tdNombre.textContent.trim();
-      const unidadVal = tdUnidad.textContent.trim();
-      const precioVal = tdPrecio.textContent.replace(/\$/g,'').replace(/,/g,'').trim();
+  document.getElementById('clearSearch').onclick = () => {
+    document.getElementById('searchInput').value = '';
+    renderMateriales(materialesData);
+  };
 
-      tdNombre.innerHTML = `<input type="text" class="form-control input-nombre" value="${escapeHtml(nombreVal)}" />`;
-      tdUnidad.innerHTML = `<input type="text" class="form-control input-unidad" value="${escapeHtml(unidadVal)}" />`;
-      tdPrecio.innerHTML = `<input type="number" step="0.01" class="form-control input-precio" value="${precioVal}" />`;
+  document.addEventListener('DOMContentLoaded', cargarMateriales);
 
-      tr.querySelector('button[data-action="editar"]').style.display = 'none';
-      tr.querySelector('button[data-action="guardar"]').style.display = 'inline-block';
-      tr.querySelector('button[data-action="cancelar"]').style.display = 'inline-block';
-    }
-
-    function cancelarEdicion(tr, original) {
-      tr.querySelector('.td-nombre').textContent = original.nombre;
-      tr.querySelector('.td-unidad').textContent = original.unidad;
-      tr.querySelector('.td-precio').textContent = formatPrice(original.precioRaw);
-
-      tr.querySelector('button[data-action="editar"]').style.display = 'inline-block';
-      tr.querySelector('button[data-action="guardar"]').style.display = 'none';
-      tr.querySelector('button[data-action="cancelar"]').style.display = 'none';
-    }
-
-    async function guardarEdicion(tr) {
-      const id = tr.dataset.id;
-      const inputNombre = tr.querySelector('.input-nombre').value.trim();
-      const inputUnidad = tr.querySelector('.input-unidad').value.trim();
-      const inputPrecioRaw = tr.querySelector('.input-precio').value;
-      const inputPrecio = parseFloat(inputPrecioRaw);
-
-      if (!inputNombre) return alert('El nombre no puede quedar vacío.');
-      if (!inputUnidad) return alert('La unidad no puede quedar vacía.');
-      if (isNaN(inputPrecio)) return alert('Precio inválido.');
-
-      const putPaths = ['/actualizar-material/', '/editar-material/', '/materiales/', '/cotizador/'];
-      let lastError = null;
-      for (const p of putPaths) {
-        try {
-          const res = await fetch(`${BASE}${p}${encodeURIComponent(id)}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombre: inputNombre, unidad: inputUnidad, precio: inputPrecio })
-          });
-          if (res.ok) {
-            tr.querySelector('.td-nombre').textContent = inputNombre;
-            tr.querySelector('.td-unidad').textContent = inputUnidad;
-            tr.querySelector('.td-precio').textContent = formatPrice(inputPrecio);
-            tr.querySelector('button[data-action="editar"]').style.display = 'inline-block';
-            tr.querySelector('button[data-action="guardar"]').style.display = 'none';
-            tr.querySelector('button[data-action="cancelar"]').style.display = 'none';
-            return alert('Material actualizado correctamente');
-          } else {
-            lastError = await res.text().catch(()=>null);
-          }
-        } catch (err) {
-          lastError = err;
-        }
-      }
-      console.error('No se actualizó. Último error:', lastError);
-      alert('No se pudo actualizar el material.');
-    }
-
-    // 🔍 Función de búsqueda
-    document.getElementById('searchInput').addEventListener('input', e => {
-      const term = e.target.value.trim().toLowerCase();
-      if (term === '') {
-        renderMateriales(materialesData);
-      } else {
-        const filtrados = materialesData.filter(m => {
-          const id = String(getField(m, 'IDmaterial', 'id', 'ID', 'Id')).toLowerCase();
-          const unidad = String(getField(m, 'Unidad', 'unidad', 'unit')).toLowerCase();
-          return id.includes(term) || unidad.includes(term);
-        });
-        renderMateriales(filtrados);
-      }
-    });
-
-    document.getElementById('clearSearch').addEventListener('click', () => {
-      document.getElementById('searchInput').value = '';
-      renderMateriales(materialesData);
-    });
-
-    document.addEventListener('DOMContentLoaded', cargarMateriales);
-  </script>
+</script>
 </body>
 </html>

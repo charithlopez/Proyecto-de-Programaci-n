@@ -11,10 +11,10 @@
       background-color: #f0f2f5;
       display: flex;
     }
-
+    
     .sidebar {
       height: 100vh;
-      width: 220px;
+      width: 230px;
       background-color: #5d7d75;
       position: fixed;
       top: 0;
@@ -38,11 +38,22 @@
       display: block;
       font-size: 15px;
       font-weight: 500;
-      transition: background 0.3s;
+      position: relative;
+      transition: 0.3s;
     }
 
     .sidebar a:hover {
       background-color: #46625b;
+    }
+
+    .sidebar a:hover::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 5px;
+      height: 100%;
+      background: white;
     }
 
     .sidebar a.active {
@@ -50,17 +61,31 @@
       font-weight: bold;
     }
 
+    .sidebar a.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 5px;
+      height: 100%;
+      background: white;
+    }
 
     .content {
-      margin-left: 220px; /* Igual al ancho de la barra lateral */
+      margin-left: 230px;
       padding: 30px;
       flex: 1;
     }
-
-    h1 {
+    .titulo-rect {
+      width: 100%;
+      background-color: #5d7d75;
+      color: white;
+      text-align: center;
+      padding: 15px 0;
+      border-radius: 10px;
       font-size: 26px;
-      margin-bottom: 20px;
-      color: #333;
+      font-weight: bold;
+      margin-bottom: 25px;
     }
 
     .container {
@@ -105,6 +130,7 @@
       font-weight: bold;
       font-size: 18px;
       text-align: center;
+      white-space: pre-line;
     }
 
     table {
@@ -166,7 +192,8 @@
   </div>
 
   <div class="content">
-    <h1>Facturación</h1>
+
+    <div class="titulo-rect">Facturación</div>
 
     <div class="container">
       <label for="idCotizacion">Ingrese el ID de la cotización:</label>
@@ -217,7 +244,10 @@
           }
 
           const fecha = new Date(data[0].fecha || Date.now()).toLocaleString();
-          titulo.textContent = `Factura Cotización #${id} - ${fecha}`;
+          const cc = data[0].cc_cliente || "No registrado";
+
+          titulo.textContent =
+            `Factura Cotización #${id}\nCC Cliente: ${cc}\nFecha: ${fecha}`;
 
           let totalFinal = 0;
 
